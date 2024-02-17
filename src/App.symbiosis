@@ -1,0 +1,9 @@
+createComponent('Button', () => {
+    return (
+        <button reference='button'>
+            {{ buttonState }}
+        </button>
+    )
+});
+
+setStateOf('button', buttonState, 1);
