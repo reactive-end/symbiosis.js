@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
                             const fragment = document.createDocumentFragment();
                             const element = document.createElement('button');
                             element.setAttribute('reference', 1);
-                            element.innerHTML = button;
+                            element.innerHTML = 'button';
                             fragment.appendChild(element);
                             var buttonState = element.getAttribute('reference');
                             document.getElementById('root').appendChild(fragment);
