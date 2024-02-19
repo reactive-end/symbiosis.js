@@ -9,6 +9,7 @@ const server = express();
 const originHTML = fs.readFileSync('public/index.html', 'utf-8').toString();
 const htmlRegex = /(?<=````)[\s\S]*?(?=````)/;
 const cssRegex = /(?<=----)[\s\S]*?(?=----)/;
+const jsRegex = /(?<={{)[\s\S]*?(?=}})/;
 
 // Obtener codigo
 let sourceCode = fs.readFileSync('src/page.sjs', 'utf-8').toString();
@@ -16,26 +17,35 @@ let sourceCode = fs.readFileSync('src/page.sjs', 'utf-8').toString();
 // Proceso de Compilacion
 function compile() {
     // Remplazar Codigo
-    const htmlMatch = sourceCode.match(htmlRegex);
-    const cssMatch = sourceCode.match(cssRegex);
+    const html = sourceCode.match(htmlRegex);
+    const css = sourceCode.match(cssRegex);
+    const js = sourceCode.match(jsRegex);
+
+    console.log(events);
 
     // Objeto de Respuesta
     return {
-        html: htmlMatch,
-        css: cssMatch
+        html,
+        css,
+        js
     };
 };
 
 server.get('/', (req, res) => {
-    const { html, css } = compile();
+    const { html, css, js } = compile();
     const output = originHTML.replace('<div id="root"></div>', 
-        `<div id="root">
-            ${html}
-        </div>
-        
-        <style>
-            ${css}
-        </style>
+        `
+            <div id="root">
+                ${html != null ? html : ''}
+            </div>
+            
+            <style>
+                ${css != null ? css : ''}
+            </style>
+
+            <script>
+                ${js != null ? js : ''}
+            </script>
         `
     );
 

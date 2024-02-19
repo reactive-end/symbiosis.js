@@ -1,5 +1,5 @@
 ````
-<button>Pruebas de Renderizado</button>
+<button id="button">Pruebas de Renderizado</button>
 ````
 
 ----
@@ -11,3 +11,7 @@ button {
     cursor: pointer;
 }
 ----
+
+{{
+    console.log('Hola Mundo en sjs');
+}}
