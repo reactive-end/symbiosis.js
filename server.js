@@ -1,57 +1,47 @@
-// Código fuente original
+// Definir Importaciones
 const fs = require('fs');
 const express = require('express');
 
-const app = express();
+// Inicializar Servidor
+const server = express();
 
-app.get('/', (req, res) => {
-    const sourceCode = fs.readFileSync('src/App.symbiosis').toString();
-    const html = fs.readFileSync('public/index.html').toString();
+// Definir Constantes
+const originHTML = fs.readFileSync('public/index.html', 'utf-8').toString();
+const htmlRegex = /(?<=````)[\s\S]*?(?=````)/;
+const cssRegex = /(?<=----)[\s\S]*?(?=----)/;
 
-    // Función para compilar el código fuente a JavaScript
-    function compile(sourceCode) {
-        // Analizar el código fuente y aplicar transformaciones
-        const transformedCode = sourceCode
-            .replace(
-                /createComponent\('(\w+)',\s*\(\)\s*=>\s*{([\s\S]*?)\}\);?/g,
-                function (match, componentName, componentBody) {
-                    return `
-                        function ${componentName}() {
-                            const fragment = document.createDocumentFragment();
-                            const element = document.createElement('button');
-                            element.setAttribute('reference', 1);
-                            element.innerHTML = 'button';
-                            fragment.appendChild(element);
-                            var buttonState = element.getAttribute('reference');
-                            document.getElementById('root').appendChild(fragment);
-                        }
+// Obtener codigo
+let sourceCode = fs.readFileSync('src/page.sjs', 'utf-8').toString();
 
-                        ${componentName}();
-                    `;
-                }
-            )
-            .replace(
-                /setStateOf\('(\w+)',\s*(\w+),\s*(\d+)\);?/g,
-                function (match, reference, variable, value) {
-                    return `const ${variable} = ${value};`;
-                }
-            );
+// Proceso de Compilacion
+function compile() {
+    // Remplazar Codigo
+    const htmlMatch = sourceCode.match(htmlRegex);
+    const cssMatch = sourceCode.match(cssRegex);
 
-        return transformedCode;
+    // Objeto de Respuesta
+    return {
+        html: htmlMatch,
+        css: cssMatch
     };
+};
 
-    // Compilar y obtener el código JavaScript resultante
-    const compiledCode = compile(sourceCode);
-
-    const htmlToShow = html.replace('<div id="root"></div>', 
+server.get('/', (req, res) => {
+    const { html, css } = compile();
+    const output = originHTML.replace('<div id="root"></div>', 
         `<div id="root">
-            <script>${compiledCode}</script>
-        </div>`
+            ${html}
+        </div>
+        
+        <style>
+            ${css}
+        </style>
+        `
     );
 
-    res.send(htmlToShow);
+    res.send(output);
 });
 
-app.listen(3000, () => {
-    console.log('compiling and rendering, server in port 3000...');
+server.listen(3000, () => {
+    console.log('compiling and serving at http://localhost:3000');
 });
